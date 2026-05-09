@@ -48,7 +48,7 @@ echo "[4/7] Генерация ключей REALITY..."
 keys=$(xray x25519)
 
 private_key=$(echo "$keys" | awk '/PrivateKey/ {print $2}')
-public_key=$(echo "$keys" | awk '/PublicKey/ {print $2}')
+public_key=$(echo "$keys" | awk '/PublicKey/ {print $3}')
 
 short_id=$(openssl rand -hex 8)
 
@@ -145,5 +145,5 @@ echo
 echo "UUID: $uuid"
 echo "PublicKey: $public_key"
 echo "ShortID: $short_id"
-echo
+echo "PrivateKey: $private_key"
 echo "Готово."
