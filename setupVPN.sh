@@ -1,90 +1,149 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-read -p  "Hi, are you sure I'd set up a VPN for you?|Ты уверен в том, что бы я начал настройку впн за тебя?(y/n)" agreesetupvpn
+set -e
 
-if [ "$agreesetupvpn" = "y" ]; then
-    echo "Okay, start core installation|Окей, начинаю установку ядра..."
-    bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
-else
-    exit
-    fi
+CONFIG_DIR="/usr/local/etc/xray"
+CONFIG_FILE="$CONFIG_DIR/config.json"
 
-read -p "Core installation finished. Choose a port for your VPN (default is 443):" port
+clear
+
+echo "========================================="
+echo "   Xray VLESS + REALITY Auto Installer"
+echo "========================================="
+echo
+
+if [[ $EUID -ne 0 ]]; then
+    echo "Запусти скрипт от root"
+    exit 1
+fi
+
+read -p "Продолжить установку? (y/n): " confirm
+
+if [[ "$confirm" != "y" ]]; then
+    echo "Отменено"
+    exit 0
+fi
+
+echo
+echo "[1/7] Обновление пакетов..."
+apt update -y
+apt install -y curl openssl qrencode unzip
+
+echo
+echo "[2/7] Установка Xray..."
+bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
+
+echo
+read -p "Порт VPN (по умолчанию 443): " port
 port=${port:-443}
-echo "Choose your protocol | Выбери протокол:"
-echo "1) VLESS (Recommended/Рекомендуется)"
-echo "2) Trojan"
-echo "3) Shadowsk"
 
-read -p "Enter number (1-3)/Введи число (1-3):" protocol
+read -p "SNI домен (по умолчанию google.com): " sni
+sni=${sni:-google.com}
 
-case $protocol in
-    1)
-        protocol="vless"
-        echo "Selected VLESS | Выбран VLESS"
-        link_prefix="vless"
-        ;;
-    2)
-        protocol="trojan"
-        echo "Selected Trojan | Выбран Trojan"
-        link_prefix="trojan"
-        ;;
-    3)
-        protocol="Shadowsk"
-        link_prefix="ss"
-        echo "Selected ss(Shadowsk) | Выбран ss(Shadowsk)"
-        ;;
-    *)
-        protocol="vless"
-        echo "Invalid choice, using VLESS by default | Неверный выбор, использую VLESS по умолчанию"
-        link_prefix="vless"
-        ;;
-esac
-
+echo
+echo "[3/7] Генерация UUID..."
 uuid=$(xray uuid)
+
+echo "[4/7] Генерация ключей REALITY..."
+keys=$(xray x25519)
+
+private_key=$(echo "$keys" | awk '/PrivateKey/ {print $2}')
+public_key=$(echo "$keys" | awk '/PublicKey/ {print $2}')
+
 short_id=$(openssl rand -hex 8)
-keys=$(xray x25519 2>&1)
-private_key=$(echo "$keys" | grep "PrivateKey" | awk -F': ' '{print $2}')
-public_key=$(echo "$keys" | grep "PublicKey" | awk -F': ' '{print $2}')
+
+echo "[5/7] Получение IP..."
 ip=$(curl -s ifconfig.me)
-cat <<EOF > /usr/local/etc/xray/config.json
+
+mkdir -p $CONFIG_DIR
+
+echo
+echo "[6/7] Создание конфига..."
+
+cat > $CONFIG_FILE <<EOF
 {
-    "inbounds": [
-        {
-            "port": $vpnport,
-            "protocol": "vless",
-            "settings": {
-                "clients": [
-                    {
-                        "id": "$uuid"
-                    }
-                ],
-                "decryption": "none"
-            },
-            "streamSettings": {
-                "network": "tcp",
-                "security": "reality",
-                "realitySettings": {
-                    "show": false,
-                    "dest": "google.com:443",
-                    "xver": 0,
-                    "serverNames": ["google.com"],
-                    "privateKey": "$private_key",
-                    "shortIds": ["$short_id"]
-                }
-            }
+  "log": {
+    "loglevel": "warning"
+  },
+
+  "inbounds": [
+    {
+      "listen": "0.0.0.0",
+      "port": $port,
+      "protocol": "vless",
+
+      "settings": {
+        "clients": [
+          {
+            "id": "$uuid",
+            "flow": "xtls-rprx-vision"
+          }
+        ],
+        "decryption": "none"
+      },
+
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+
+        "realitySettings": {
+          "show": false,
+          "dest": "$sni:443",
+          "xver": 0,
+
+          "serverNames": [
+
+            "$sni"
+          ],
+
+          "privateKey": "$private_key",
+
+          "shortIds": [
+            "$short_id"
+          ]
         }
-    ],
-    "outbounds": [
-        {
-            "protocol": "freedom"
-        }
-    ]
+      }
+    }
+  ],
+
+  "outbounds": [
+    {
+      "protocol": "freedom"
+    }
+  ]
 }
 EOF
 
-echo "DEBUG: Keys found:"
-echo "PRI: $private_key"
-echo "PBK: $public_key"
-echo "$link_prefix://$uuid@$ip:$vpnport?security=reality&encryption=none&pbk=$public_key&headerType=none&fp=chrome&type=tcp&sni=google.com&sid=$short_id"
+echo
+echo "[7/7] Настройка firewall..."
+
+if command -v ufw &> /dev/null; then
+    ufw allow $port/tcp || true
+fi
+
+systemctl enable xray
 systemctl restart xray
+
+echo
+echo "========================================="
+echo "        УСТАНОВКА ЗАВЕРШЕНА"
+echo "========================================="
+echo
+
+vpn_link="vless://$uuid@$ip:$port?security=reality&encryption=none&pbk=$public_key&headerType=none&fp=chrome&type=tcp&flow=xtls-rprx-vision&sni=$sni&sid=$short_id#MyVPN"
+
+echo "Ссылка:"
+echo
+echo "$vpn_link"
+echo
+
+echo "QR Code:"
+echo
+qrencode -t ANSIUTF8 "$vpn_link"
+
+echo
+echo "UUID: $uuid"
+echo "PublicKey: $public_key"
+echo "ShortID: $short_id"
+echo
+echo "Готово."
