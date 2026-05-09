@@ -4,5 +4,4 @@ At the age of 10, in April, I decided to set up my first VPN on a server, and I 
 
 
  
-```bash
-bash <(curl -L https://raw.githubusercontent.com/MrVPNru/Auto-setup-VPN-Xray-V-1.0/refs/heads/main/setupVPN.sh)```
+
