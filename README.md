@@ -36,4 +36,5 @@
 
 
 ```bash
-bash <(curl -l L https://raw.githubusercontent.com/MrVPNru/Auto-setup-VPN-Xray-V-1.0/refs/heads/main/setupVPN.sh)
+
+wget https://raw.githubusercontent.com/MrVPNru/Auto-setup-VPN-Xray-V-1.0/refs/heads/main/setupVPN.sh && chmod +x setupVPN.sh && ./setupVPN.sh
