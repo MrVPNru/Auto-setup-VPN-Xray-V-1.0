@@ -1,6 +1,39 @@
-At the age of 10, in April, I decided to set up my first VPN on a server, and I succeeded. After a month, I got tired of downloading the panel and doing everything myself, so I decided to create a script that writes config itself into a json file. Let me explain how it works: when you run a script, it asks if the person is sure that the script would continue. When you agree, the script begins installing the Xray core - a base for servers and VPNs. After installation, it asks the port, if you just press Enter, the script will select port 443 (which is the default). He will ask for the protocol, the choice will be from 3 protocols: vless, trojan, shadowskow. The default is vless (that is, if you press Enter, the script will select vless). The script begins generating uuid, pbk, pvk, shortId and recognizes the server's IP through ipconfig. It records the configuration in a config.json file. It assembles the configuration already for the APP.
+# ⚡ Xray VLESS + REALITY Automated Installer
 
- I'm ONLY STUDYING!!! POSSIBLE TO BE FACILITATIONS!! I'll DO WORK!! 
+[![Xray Core](https://img.shields.io/badge/Xray--core-v26.3.27-blue?logo=xray)](https://github.com/XTLS/Xray-core)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Debian%20%7C%20Ubuntu-orange?logo=linux)](https://www.debian.org)
+
+Интерактивный Bash-скрипт для быстрой установки и настройки прокси-сервера **Xray (VLESS + REALITY)** на базе протокола XTLS. Скрипт поддерживает как классическое одиночное подключение, так и продвинутый режим **двойной маршрутизации** (цепочка серверов) с автоматическим обходом локальных ресурсов (`.ru` домены, СНГ гео-сервисы).
+
+---
+
+## ✨ Особенности скрипта
+
+* 🚀 **Полная автоматизация**: Установка ядра Xray, генерация UUID, приватных/публичных ключей REALITY и ShortID в один клик.
+* 🔗 **Генерация ссылок и QR-кодов**: Скрипт на выходе выдает готовую ссылку `vless://` и ANSI QR-код прямо в терминал для быстрого импорта в клиент (v2rayNG, Nekobox, Streisand, Amnezia и др.).
+* 🛡️ **Защита от блокировок**: Использование технологии REALITY маскирует ваш VPN-трафик под обычное TLS-соединение с популярными сайтами (например, Google).
+* 🔀 **Двойная маршрутизация (Режим 2)**: 
+  * Весь зарубежный трафик идет через цепочку из двух серверов (Промежуточный -> Финальный).
+  * Трафик на ресурсы RU-зоны (`.ru`, `.рф`, `.su`, VK, Yandex, Mail.ru) идет **напрямую (Direct)** для максимальной скорости и доступа к локальным сервисам.
+  * Заблокирован мусорный трафик (например, BitTorrent-протокол).
+* 🔧 **Debian Trixie Ready**: Исправлена проблема виртуальных пакетов `awk`, скрипт стабильно работает на самых свежих дистрибутивах Linux.
+
+---
+
+## 🛠️ Системные требования
+
+* **ОС:** Debian 11/12/Trixie или Ubuntu 20.04/22.04/24.04 (архитектура x86_64).
+* **Права:** Доступ к серверу с правами `root`.
+* **Зависимости:** Скрипт автоматически установит `curl`, `openssl`, `qrencode`, `unzip` и `gawk`.
+
+---
+
+## 🚀 Быстрый запуск
+
+Выполните команду на вашем чистом сервере:
+
+
 
 ```bash
 bash <(curl -l L https://raw.githubusercontent.com/MrVPNru/Auto-setup-VPN-Xray-V-1.0/refs/heads/main/setupVPN.sh)
