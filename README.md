@@ -1,40 +1,44 @@
-# ⚡ Xray VLESS + REALITY Automated Installer
+# VPN & Gaming DNS Setup Script
 
-[![Xray Core](https://img.shields.io/badge/Xray--core-v26.3.27-blue?logo=xray)](https://github.com/XTLS/Xray-core)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-Debian%20%7C%20Ubuntu-orange?logo=linux)](https://www.debian.org)
+A streamlined Bash script for rapid deployment of a personal network infrastructure on a **fresh VPS**. This tool is designed to set up a high-performance VPN and an ad-blocking DNS server in under a minute, with custom DNS-rewrite support for gaming.
 
-Интерактивный Bash-скрипт для быстрой установки и настройки прокси-сервера **Xray (VLESS + REALITY)** на базе протокола XTLS. Скрипт поддерживает как классическое одиночное подключение, так и продвинутый режим **двойной маршрутизации** (цепочка серверов) с автоматическим обходом локальных ресурсов (`.ru` домены, СНГ гео-сервисы).
-
----
-
-## ✨ Особенности скрипта
-
-* 🚀 **Полная автоматизация**: Установка ядра Xray, генерация UUID, приватных/публичных ключей REALITY и ShortID в один клик.
-* 🔗 **Генерация ссылок и QR-кодов**: Скрипт на выходе выдает готовую ссылку `vless://` и ANSI QR-код прямо в терминал для быстрого импорта в клиент (v2rayNG, Nekobox, Streisand, Amnezia и др.).
-* 🛡️ **Защита от блокировок**: Использование технологии REALITY маскирует ваш VPN-трафик под обычное TLS-соединение с популярными сайтами (например, Google).
-* 🔀 **Двойная маршрутизация (Режим 2)**: 
-  * Весь зарубежный трафик идет через цепочку из двух серверов (Промежуточный -> Финальный).
-  * Трафик на ресурсы RU-зоны (`.ru`, `.рф`, `.su`, VK, Yandex, Mail.ru) идет **напрямую (Direct)** для максимальной скорости и доступа к локальным сервисам.
-  * Заблокирован мусорный трафик (например, BitTorrent-протокол).
-* 🔧 **Debian Trixie Ready**: Исправлена проблема виртуальных пакетов `awk`, скрипт стабильно работает на самых свежих дистрибутивах Linux.
+### 🚀 Key Features
+* **Automated Installation:** Automatically handles dependencies and installs the latest Xray-core.
+* **Modern Protocols:** Optimized for bypassing DPI and censorship:
+    * **VLESS (Reality)** — industry-standard stealth.
+    * **Hysteria 2** — high-speed UDP-based performance.
+    * **Shadowsocks (2022)** — reliable security.
+    * **Trojan, WireGuard, OpenVPN**.
+* **AdGuard Home:** Integrated ad-blocking with easy DNS-rewrite (bypass) configuration.
+* **Zero Bloat:** Deploys a clean, targeted solution without unnecessary services.
 
 ---
 
-## 🛠️ Системные требования
-
-* **ОС:** Debian 11/12/Trixie или Ubuntu 20.04/22.04/24.04/26.04 (архитектура x86_64).
-* **Права:** Доступ к серверу с правами `root`.
-* **Зависимости:** Скрипт автоматически установит `curl`, `openssl`, `qrencode`, `unzip` и `gawk`.
+### ⚠️ Warning
+This script is intended **only for fresh server installations**. Running it on a server with existing configurations may overwrite your current settings.
 
 ---
 
-## 🚀 Быстрый запуск
+### 🛠 How it works
+1. **DNS Setup:** Installs AdGuard Home, applies default ad-blocking filters, and allows you to configure DNS-rewrite for specific game domains.
+2. **VPN Setup:** Choose your preferred protocol, set a port, and receive a ready-to-use connection link (compatible with v2rayNG, Nekoray, etc.) along with an ANSI QR code.
 
-Выполните команду на вашем чистом сервере:
+---
 
+### 📋 Supported Protocols
+* VLESS + Reality (XTLS-Vision)
+* Hysteria 2
+* Shadowsocks 2022 (AEAD)
+* Trojan
+* WireGuard
+* OpenVPN
 
+---
+
+### ⚠️ Important Note
+This script overwrites the configuration file at `/usr/local/etc/xray/config.json`. Please back up any existing configurations if you are not using a fresh server.
+
+---
 
 ```bash
-
-wget https://raw.githubusercontent.com/MrVPNru/Auto-setup-VPN-Xray-V-1.0/refs/heads/main/setupVPN.sh && chmod +x setupVPN.sh && ./setupVPN.sh
+wget https://raw.githubusercontent.com/MrVPNru/Auto-setup-VPN-Xray-V-1.0/refs/heads/main/setup.sh && chmod +x setup.sh && ./setup.sh
